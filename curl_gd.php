@@ -11,7 +11,7 @@ function GoogleDrive($gid){
 	$title = gdTitle($gid);
 	$img = gdImg($gdurl);
 	$streaming_vid = Drive($gid);
-    	$output = ['id'=> $gid, 'file' => $streaming_vid, 'type' => 'video/mp4'];
+    $output = ['label'=> 'auto', 'file' => $streaming_vid, 'type' => 'video/mp4'];
 	$output = json_encode($output, JSON_PRETTY_PRINT);
 	return $output;
 }
