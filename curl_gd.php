@@ -11,7 +11,13 @@ function GoogleDrive($gid){
 	$title = gdTitle($gid);
 	$img = gdImg($gdurl);
 	$streaming_vid = Drive($gid);
-    $output = ['label'=> 'auto', 'file' => $streaming_vid, 'type' => 'video/mp4'];
+	$keys = array('AIzaSyCNxXAnWvUkdi0m7XTkC-EFHb2z2MQMtRo','AIzaSyCSqEAuMN_6svup7oZc_v9JRq1PHOQ_2dE','AIzaSyD7jsVh3vlw-xhJcklRTugVDSwdnfxMma4','AIzaSyDVP1vHDb9fP2fNAhd4GSRRspLMFyVt_X0','AIzaSyAFin5-mcY0LhVmjZ56jnVkuUyomb8qf6E','AIzaSyACZPjRqcxAS4q_J-MP-dAfMzZVUKqh-2Y');
+	if(empty($streaming_vid)){
+	    	$output = ['label'=> 'auto', 'file' => 'https://www.googleapis.com/drive/v3/files/'.$gid.'?alt=media&key='.$keys[array_rand($keys)], 'type' => 'video/mp4'];
+		$output = json_encode($output, JSON_PRETTY_PRINT);
+		return $output;
+	}
+    	$output = ['label'=> 'auto', 'file' => $streaming_vid, 'type' => 'video/mp4'];
 	$output = json_encode($output, JSON_PRETTY_PRINT);
 	return $output;
 }
@@ -44,6 +50,9 @@ function Drive($gid) {
 
 //New cache
 function gd_cache($gid, $source) {
+    if($source == '404'){
+        return 'Error|a';
+    }
 	$time = gmdate('Y-m-d H:i:s', time() + 3600*(+7+date('I')));
 	$file_name = md5('GD'.$gid.'player');
 	$string = strtotime($time).'@@'.$source;
@@ -66,19 +75,21 @@ function getlink($id){
 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,false);
 	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,false);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+				curl_setopt($ch, CURLOPT_TIMEOUT, 300);
+
 	curl_setopt($ch, CURLOPT_COOKIEJAR, dirname(__FILE__) . "/google.mp3");
 	curl_setopt($ch, CURLOPT_COOKIEFILE, dirname(__FILE__) . "/google.mp3");
 	$page = curl_exec($ch);
 	$get = locheader($page);
 	if (strpos($page, "Can&#39;t")) {
 		//'Sorry, the owner hasn\'t given you permission to download this file.';
-		$get = '1';
+		$get = '404';
 	}elseif(strpos($page, "Error 404")) {
 		//Error 404. We\'re sorry. You can\'t access this item because it is in violation of our Terms of Service.
-		$get = '2';
+		$get = '404';
 	}else{
 		if ($get != ""){
-
+        $get = '404';
 		} else {
 			$html = str_get_html($page);
 			$link = urldecode(trim($html->find('a[id=uc-download-link]',0)->href));
@@ -91,6 +102,8 @@ function getlink($id){
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,false);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,false);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			curl_setopt($ch, CURLOPT_TIMEOUT, 300);
+
 			curl_setopt($ch, CURLOPT_COOKIEJAR, dirname(__FILE__) . "/google.mp3");
 			curl_setopt($ch, CURLOPT_COOKIEFILE, dirname(__FILE__) . "/google.mp3");
 
